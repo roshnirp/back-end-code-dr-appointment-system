@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 const clinicSchema = new mongoose.Schema(
     {
-     
+   
         clinicName: {
             type:String,
             require:[true,'firstName is required']

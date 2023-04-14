@@ -97,38 +97,72 @@ const loginController = async (req, res) => {
 
  //Apply Doctor CTRl
  const applyDoctorController = async(req,res) =>{
-  try {
+const {doctorName}=req.body;
 
-    const newDoctor= await doctorModel({
-      ...req.body, status:'pending'
-    })
-    await newDoctor.save()
-    const adminUser = await userModel.findOne({isAdmin:true})
-    const notification = adminUser.notification;
-    notification.push({
-       type:'appy-doctor-request',
-       message:`${newDoctor.firstName} ${newDoctor.lastName} has Applied for a doctor Account`,
-       data:{
-        doctorId: newDoctor._id,
-        name: newDoctor.firstName + " " + newDoctor.lastName,
-        onClickPath: '/admin/doctors',
-      },
-    });
-    await userModel.findByIdAndUpdate(adminUser._id, {notification});
-    res.status(201).send({
-      success:true,
-      message:'Doctor Account Applied Succssful'
-    });
-  }
-   catch (error) {
-    console.log(error)
+  try {
+  req.body.status='pending'
+  const DoctorExists = await doctorModel.findOne({doctorName});
+  if(DoctorExists)
+  {
+    return res.status(400).send({
+       success:false,
+       message:'doctor Already Exits'
+     })
+     // throw new Error("patient Alread Exists");
+   }
+
+   const newDoctor = new doctorModel(req.body);
+   await newDoctor.save();
+
+res.status(200).send({
+     success:true,
+     message:'add doctor successully',
+   });
+
+
+} catch (error) {
+  console.log(error)
     res.status(500).send({
       success:false,
       error,
-      message:'Error while Applying for Doctor'
+      message:'Error while Add patient'
     })
+  
+}
+ 
+
+//   try {
+
+//     const newDoctor= await doctorModel({
+//       ...req.body, status:'pending'
+//     })
+//     await newDoctor.save()
+//     const adminUser = await userModel.findOne({isAdmin:true})
+//     const notification = adminUser.notification;
+//     notification.push({
+//        type:'appy-doctor-request',
+//        message:`${newDoctor.firstName} ${newDoctor.lastName} has Applied for a doctor Account`,
+//        data:{
+//         doctorId: newDoctor._id,
+//         name: newDoctor.firstName + " " + newDoctor.lastName,
+//         onClickPath: '/admin/doctors',
+//       },
+//     });
+//     await userModel.findByIdAndUpdate(adminUser._id, {notification});
+//     res.status(201).send({
+//       success:true,
+//       message:'Doctor Account Applied Succssful'
+//     });
+//   }
+//    catch (error) {
+//     console.log(error)
+//     res.status(500).send({
+//       success:false,
+//       error,
+//       message:'Error while Applying for Doctor'
+//     })
     
-  }
+//   }
 
  };
 
@@ -251,19 +285,14 @@ const loginController = async (req, res) => {
     }
     const newPatient = new patientModel(req.body);
     await newPatient.save();
-
-    
-    const addpatientintoappointment = new appointmentModel(req.body);
+ const addpatientintoappointment = new appointmentModel(req.body);
     await addpatientintoappointment.save();
-
-
-
-
-    res.status(200).send({
+ res.status(200).send({
       success:true,
       message:'add patient successully',
     });
-  } catch (error) {
+  } 
+  catch (error) {
     console.log(error)
     res.status(500).send({
       success:false,
@@ -275,30 +304,26 @@ const loginController = async (req, res) => {
 
 
  const adminController = async(req, res) => {
-
-
- 
-  // const {email} = req.body;
+ const {email} = req.body;
   try {
     req.body.status = 'pending'
+  const adminExists = await adminModel.findOne({email});
+    if(adminExists)
+    {
+     return res.status(200).send({
+        success:true,
+        message:'add admin successully'
+      })
+  //     // throw new Error("patient Alread Exists");
+    }
 
-   
-  //   const adminExists = await adminModel.findOne({email});
-  //   if(adminExists)
-  //   {
-  //    return res.status(400).send({
-  //       success:false,
-  //       message:'admin Already Exits'
-  //     })
-  // //     // throw new Error("patient Alread Exists");
-  //   }
-    const newadmin = new adminModel(req.body);
+   const newadmin = new adminModel(req.body);
     await newadmin.save();
 
-        res.status(200).send({
-      success:true,
-      message:'add admin successully',
-    });
+    //     res.status(200).send({
+    //   success:true,
+    //   message:'add admin successully',
+    // });
   } catch (error) {
     console.log(error)
     res.status(500).send({
@@ -353,6 +378,120 @@ const loginController = async (req, res) => {
   }
 
 
+  const editcliniclistController = async(req, res)=>{
+
+    try {
+      const cliniclistdata = await clinicModel.findById(req.params._id);
+      res.status(200).send({
+        success:true,
+        message:'edite Cliniclistdata  Successful',
+        data:cliniclistdata,
+        status:"ok", data:cliniclistdata
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send({
+        success:false,
+        error,
+        message:'Error In User cliniclistdata'
+      })
+      
+    }
+
+  }
+
+
+
+  const docterListController = async(req, res) =>{
+
+    try {
+      const doctorlistdata = await doctorModel.find();
+      res.status(200).send({
+        success:true,
+        message:'Doctorlistdata Fetch Successful',
+        data:doctorlistdata,
+        status:"ok", data:doctorlistdata
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send({
+        success:false,
+        error,
+        message:'Error In User cliniclistdata'
+      })
+      
+    }
+
+  }
+
+  const bookeAppointmentlistController = async(req, res) =>{
+
+    try {
+      const doctorlistdata = await patientModel.find();
+      res.status(200).send({
+        success:true,
+        message:'listdata Fetch Successful',
+        data:doctorlistdata,
+        status:"ok", data:doctorlistdata
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send({
+        success:false,
+        error,
+        message:'Error In User cliniclistdata'
+      })
+      
+    }
+
+  }
+
+  const editdoctorlistController = async(req, res)=>{
+
+    try {
+      const doctorlistdata = await doctorModel.findById(req.params._id);
+      res.status(200).send({
+        success:true,
+        message:'edite Doctorlistdata  Successful',
+        data:doctorlistdata,
+        status:"ok", data:doctorlistdata
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send({
+        success:false,
+        error,
+        message:'Error In User cliniclistdata'
+      })
+      
+    }
+
+  }
+
+  const editpatientlisrtControlle = async(req, res)=>{
+
+    try {
+      const patientlistdata = await patientModel.findById(req.params._id);
+      res.status(200).send({
+        success:true,
+        message:'edite Doctorlistdata  Successful',
+        data:patientlistdata,
+        status:"ok", data:patientlistdata
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).send({
+        success:false,
+        error,
+        message:'Error In User patientlistdata'
+      })
+      
+    }
+
+  }
+
+
+
  
 
 
@@ -368,5 +507,10 @@ module.exports = { loginController,
                 userPrescriptionController,
                 addPatientController,
                 usergetPrescriptionController,
-                listclinicController
+                bookeAppointmentlistController,
+                listclinicController,
+                docterListController,
+                editcliniclistController,
+                editdoctorlistController,
+                editpatientlisrtControlle
               };
